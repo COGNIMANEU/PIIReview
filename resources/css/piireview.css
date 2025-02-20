@@ -1,21 +1,103 @@
+/* Base container */
+.piireview-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.piireview-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+
+.piireview-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Card styling */
 .piireview-card {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 16px;
-    margin: 16px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
     background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.piireview-card img,
-.piireview-card video {
+.piireview-card-header {
+    padding: 15px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+}
+
+.piireview-card-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.piireview-card-content {
+    padding: 15px;
+}
+
+.piireview-card-content img,
+.piireview-card-content video {
     max-width: 100%;
-    max-height: 400px;
+    height: auto;
     display: block;
-    margin: 0 auto 16px;
+    margin: 0 auto;
 }
 
+.piireview-card-footer {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+}
+
+/* Controls */
 .piireview-controls {
     display: flex;
     justify-content: space-between;
     gap: 16px;
+}
+
+.piireview-button-approve,
+.piireview-button-reject {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.piireview-button-approve {
+    background-color: #28a745;
+    color: white;
+}
+
+.piireview-button-reject {
+    background-color: #dc3545;
+    color: white;
+}
+
+.piireview-button-approve:hover {
+    background-color: #218838;
+}
+
+.piireview-button-reject:hover {
+    background-color: #c82333;
+}
+
+/* Kiosk mode styles */
+.mw-kiosk-mode #mw-head,
+.mw-kiosk-mode #mw-panel,
+.mw-kiosk-mode #footer {
+    display: none !important;
+}
+
+.mw-kiosk-mode #content {
+    margin-left: 0;
+    padding: 1em;
 }
