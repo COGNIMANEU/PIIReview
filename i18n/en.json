@@ -1,0 +1,14 @@
+{
+    "@metadata": {
+        "authors": [
+            "Donal"
+        ]
+    },
+    "piireview": "PII Review",
+    "piireview-desc": "Provides an interface for reviewing uploaded media files for PII",
+    "piireview-title": "PII Review Interface",
+    "piireview-loading": "Loading media files for review...",
+    "piireview-approve": "Approve",
+    "piireview-reject": "Reject",
+    "piireview-no-files": "No files found for review"
+}

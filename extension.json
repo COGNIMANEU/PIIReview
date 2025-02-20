@@ -1,0 +1,56 @@
+{
+    "name": "PIIReview",
+    "version": "1.0.0",
+    "author": "[Your Name]",
+    "url": "https://www.mediawiki.org/wiki/Extension:PIIReview",
+    "descriptionmsg": "piireview-desc",
+    "license-name": "GPL-2.0-or-later",
+    "type": "other",
+    "requires": {
+        "MediaWiki": ">= 1.39.0"
+    },
+    "AutoloadClasses": {
+        "PIIReviewHooks": "includes/PIIReviewHooks.php",
+        "SpecialPIIReview": "includes/SpecialPIIReview.php"
+    },
+    "Hooks": {
+        "BeforePageDisplay": "PIIReviewHooks::onBeforePageDisplay"
+    },
+    "SpecialPages": {
+        "PIIReview": "SpecialPIIReview"
+    },
+    "MessagesDirs": {
+        "PIIReview": [
+            "i18n"
+        ]
+    },
+    "ResourceModules": {
+        "ext.PIIReview": {
+            "styles": [
+                "resources/css/piireview.css"
+            ],
+            "scripts": [
+                "resources/js/piireview.js"
+            ],
+            "dependencies": [
+                "mediawiki.api",
+                "oojs-ui"
+            ]
+        }
+    },
+    "ResourceFileModulePaths": {
+        "localBasePath": "",
+        "remoteExtPath": "PIIReview"
+    },
+    "config": {
+        "PIIReviewWatchFolder": {
+            "value": "/path/to/watch/folder",
+            "description": "Path to folder to monitor for new uploads"
+        },
+        "PIIReviewKioskMode": {
+            "value": true,
+            "description": "Whether to enable kiosk mode with minimal menus"
+        }
+    },
+    "manifest_version": 2
+}
