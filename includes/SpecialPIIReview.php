@@ -7,14 +7,14 @@ class SpecialPIIReview extends SpecialPage {
 
     public function execute($sub) {
         $out = $this->getOutput();
-        $out->setPageTitle($this->msg('piireview-title'));
-        
+        $out->setPageTitle($this->msg('piireview-title')->text());
+
         if (!$this->getUser()->isAllowed('piireview')) {
             throw new PermissionsError('piireview');
         }
 
         $out->addModules('ext.PIIReview');
-        
+
         // Add container structure
         $out->addHTML('
             <div class="piireview-container">
@@ -27,7 +27,7 @@ class SpecialPIIReview extends SpecialPage {
         // Scan the watch folder for new files
         $watchFolder = $this->getConfig()->get('PIIReviewWatchFolder');
         $files = $this->scanWatchFolder($watchFolder);
-        
+
         if (empty($files)) {
             $out->addHTML('<p>' . $this->msg('piireview-no-files')->text() . '</p>');
         } else {
@@ -71,15 +71,15 @@ class SpecialPIIReview extends SpecialPage {
                 <h3>' . htmlspecialchars($file['name']) . '</h3>
             </div>
             <div class="piireview-card-content">';
-        
+
         if (strpos($file['type'], 'image/') === 0) {
-            $html .= '<img src="data:' . $file['type'] . ';base64,' . 
-                    base64_encode(file_get_contents($file['path'])) . 
+            $html .= '<img src="data:' . $file['type'] . ';base64,' .
+                    base64_encode(file_get_contents($file['path'])) .
                     '" alt="Preview">';
         } else if (strpos($file['type'], 'video/') === 0) {
             $html .= '<video controls>
-                        <source src="data:' . $file['type'] . ';base64,' . 
-                        base64_encode(file_get_contents($file['path'])) . 
+                        <source src="data:' . $file['type'] . ';base64,' .
+                        base64_encode(file_get_contents($file['path'])) .
                         '" type="' . $file['type'] . '">
                         Your browser does not support video playback.
                     </video>';

@@ -23,7 +23,8 @@
         "test": [
             "parallel-lint . --exclude vendor --exclude node_modules",
             "phpcs -p -s",
-            "minus-x check ."
+            "minus-x check .",
+            "phpunit --configuration ./tests/phpunit/phpunit.xml.dist"
         ],
         "fix": [
             "minus-x fix .",
