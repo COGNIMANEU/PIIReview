@@ -1,0 +1,41 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint:
+    name: Code Style and Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2, phpcs
+          extensions: mbstring, intl, fileinfo
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Check code style with PHP_CodeSniffer
+        run: |
+          if [ -f vendor/bin/phpcs ]; then
+            vendor/bin/phpcs -p -s
+          else
+            echo "PHPCS not installed, skipping code style check"
+          fi
+
+      - name: Check PHP syntax errors
+        run: |
+          find . -name "*.php" -not -path "./vendor/*" -print0 | xargs -0 -n1 php -l

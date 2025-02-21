@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+          extensions: mbstring, intl, fileinfo
+
+      - name: Install dependencies
+        run: composer install --no-dev --prefer-dist --no-progress
+
+      - name: Create archive
+        run: |
+          # Remove development files
+          rm -rf .git .github tests composer.lock
+          # Create tarball
+          cd ..
+          tar -czf PIIReview-${{ github.ref_name }}.tar.gz --exclude-vcs PIIReview
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ../PIIReview-${{ github.ref_name }}.tar.gz
+          draft: false
+          prerelease: false
+          generate_release_notes: true

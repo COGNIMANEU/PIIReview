@@ -1,0 +1,60 @@
+name: MediaWiki Extension Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Test PHP ${{ matrix.php }} + MediaWiki ${{ matrix.mw }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Test with the minimum required MediaWiki and PHP versions
+          - php: '7.4'
+            mw: 'REL1_39'
+          # Test with the latest stable MediaWiki and PHP
+          - php: '8.1'
+            mw: 'REL1_41'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          path: extensions/PIIReview
+
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, intl, fileinfo
+          tools: composer:v2
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install MediaWiki
+        run: |
+          git clone --depth 1 -b ${{ matrix.mw }} https://github.com/wikimedia/mediawiki.git mediawiki
+          cd mediawiki
+          composer install --prefer-dist --no-progress
+
+      - name: Prepare extension
+        run: |
+          cd mediawiki
+          echo 'wfLoadExtension( "PIIReview" );' >> LocalSettings.php
+          echo '$wgPIIReviewWatchFolder = "/tmp/pii-review";' >> LocalSettings.php
+          echo '$wgPIIReviewKioskMode = true;' >> LocalSettings.php
+          mkdir -p /tmp/pii-review
+
+      - name: Run PHPUnit
+        run: |
+          cd mediawiki
+          php tests/phpunit/phpunit.php --group PIIReview

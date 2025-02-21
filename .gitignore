@@ -8,3 +8,16 @@
 phpunit.xml
 phpunit.xml.dist
 /vendor/
+# Composer
+composer.phar
+
+# IDEs
+*.code-workspace
+.DS_Store
+
+# Testing
+coverage/
+.phpunit.result.cache
+
+# Node modules (if you use them for frontend tooling)
+node_modules/
