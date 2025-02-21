@@ -7,3 +7,4 @@
 .editorconfig
 phpunit.xml
 phpunit.xml.dist
+/vendor/
