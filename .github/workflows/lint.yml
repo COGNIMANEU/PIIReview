@@ -23,7 +23,10 @@ jobs:
           extensions: mbstring, intl, fileinfo
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: |
+          # Update composer.lock if needed to match the current PHP version
+          composer update --no-install
+          composer install --prefer-dist --no-progress
 
       - name: Validate composer.json
         run: composer validate --strict
