@@ -1,0 +1,9 @@
+# IDE
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+.phpstorm.meta.php
+.editorconfig
+phpunit.xml
+phpunit.xml.dist
