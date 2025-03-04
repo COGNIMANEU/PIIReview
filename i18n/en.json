@@ -1,14 +1,39 @@
 {
-    "@metadata": {
-        "authors": [
-            "Donal"
-        ]
-    },
-    "piireview": "PII Review",
-    "piireview-desc": "Provides an interface for reviewing uploaded media files for PII",
-    "piireview-title": "PII Review Interface",
-    "piireview-loading": "Loading media files for review...",
-    "piireview-approve": "Approve",
-    "piireview-reject": "Reject",
-    "piireview-no-files": "No files found for review"
+  "@metadata": {
+    "authors": [
+      "Donal"
+    ]
+  },
+  "piireview": "PII Review",
+  "piireview-desc": "Provides an interface for reviewing uploaded media files for PII",
+  "piireview-title": "PII Review Interface",
+  "piireview-loading": "Loading media files for review...",
+  "piireview-approve": "Approve",
+  "piireview-reject": "Reject",
+  "piireview-no-files": "No files found for review",
+  "piireview-zoom-in": "Zoom In",
+  "piireview-zoom-out": "Zoom Out",
+  "piireview-zoom-reset": "Reset Zoom",
+  "piireview-scanning": "Scanning for PII...",
+  "piireview-pii-detected": "PII Detected",
+  "piireview-no-pii": "No PII Detected",
+  "piireview-processing": "Processing...",
+  "piireview-pii-removed": "PII Removed",
+  "piireview-process-pii": "Process PII",
+  "piireview-processed": "Processed",
+  "piireview-notes-placeholder": "Add review notes here...",
+  "piireview-progress": "Batch Progress:",
+  "piireview-batch-approve": "Approve All Clear",
+  "piireview-batch-process": "Process All PII",
+  "piireview-search-placeholder": "Search files...",
+  "piireview-sort-name": "Sort by Name",
+  "piireview-sort-date": "Sort by Date",
+  "piireview-sort-size": "Sort by Size",
+  "piireview-filter-all": "All Files",
+  "piireview-filter-pii": "PII Detected",
+  "piireview-filter-clear": "No PII",
+  "piireview-approve-success": "File $1 has been approved",
+  "piireview-approve-error": "Failed to approve file $1",
+  "piireview-reject-success": "File $1 has been rejected",
+  "piireview-reject-error": "Failed to reject file $1"
 }

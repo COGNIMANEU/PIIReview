@@ -1,75 +1,164 @@
-/* Base container */
-.piireview-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.piireview-header {
-    margin-bottom: 20px;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 10px;
-}
-
-.piireview-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-/* Card styling */
+/* Enhanced card styling */
 .piireview-card {
     border: 1px solid #ddd;
     border-radius: 8px;
     overflow: hidden;
     background: #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease-in-out;
+    position: relative;
+    margin-bottom: 1.5em;
+}
+
+.piireview-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .piireview-card-header {
     padding: 15px;
     background: #f5f5f5;
     border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .piireview-card-header h3 {
     margin: 0;
     font-size: 16px;
     color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 70%;
+}
+
+.piireview-metadata {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: #666;
 }
 
 .piireview-card-content {
     padding: 15px;
+    min-height: 200px;
+    position: relative;
 }
 
-.piireview-card-content img,
-.piireview-card-content video {
+/* Image container and controls */
+.piireview-image-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.piireview-image {
     max-width: 100%;
     height: auto;
     display: block;
     margin: 0 auto;
+    cursor: zoom-in;
+    transition: transform 0.3s ease;
 }
 
-.piireview-card-footer {
+.piireview-image-controls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+    background: rgba(255,255,255,0.7);
+    padding: 5px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.piireview-image-controls button {
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.piireview-image-controls button:hover {
+    background: #f0f0f0;
+}
+
+/* Video styling */
+.piireview-video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 4px;
+}
+
+/* PII Status indicator */
+.piireview-pii-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+.piireview-status-indicator {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.piireview-status-scanning {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.piireview-status-detected {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.piireview-status-clear {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Actions area */
+.piireview-card-actions {
     padding: 15px;
     border-top: 1px solid #ddd;
+    background: #f9f9f9;
 }
 
-/* Controls */
-.piireview-controls {
+.piireview-action-buttons {
     display: flex;
-    justify-content: space-between;
-    gap: 16px;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 .piireview-button-approve,
-.piireview-button-reject {
+.piireview-button-reject,
+.piireview-button-process {
     padding: 8px 16px;
     border-radius: 4px;
     border: none;
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.2s;
+    flex-grow: 1;
+    text-align: center;
 }
 
 .piireview-button-approve {
@@ -82,6 +171,11 @@
     color: white;
 }
 
+.piireview-button-process {
+    background-color: #007bff;
+    color: white;
+}
+
 .piireview-button-approve:hover {
     background-color: #218838;
 }
@@ -90,14 +184,21 @@
     background-color: #c82333;
 }
 
-/* Kiosk mode styles */
-.mw-kiosk-mode #mw-head,
-.mw-kiosk-mode #mw-panel,
-.mw-kiosk-mode #footer {
-    display: none !important;
+.piireview-button-process:hover {
+    background-color: #0069d9;
 }
 
-.mw-kiosk-mode #content {
-    margin-left: 0;
-    padding: 1em;
+.piireview-notes {
+    margin-top: 10px;
+}
+
+.piireview-notes textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    min-height: 60px;
+    resize: vertical;
 }

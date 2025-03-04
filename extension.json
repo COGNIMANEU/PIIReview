@@ -43,14 +43,30 @@
         "remoteExtPath": "PIIReview"
     },
     "config": {
-        "PIIReviewWatchFolder": {
-            "value": "/path/to/watch/folder",
-            "description": "Path to folder to monitor for new uploads"
-        },
-        "PIIReviewKioskMode": {
-            "value": true,
-            "description": "Whether to enable kiosk mode with minimal menus"
-        }
+      "PIIReviewWatchFolder": {
+        "value": "/path/to/watch/folder",
+        "description": "Path to folder to monitor for new uploads"
+      },
+      "PIIReviewKioskMode": {
+        "value": true,
+        "description": "Whether to enable kiosk mode with minimal menus"
+      },
+      "PIIReviewApprovedFolder": {
+        "value": "/path/to/approved/folder",
+        "description": "Path to store approved files"
+      },
+      "PIIReviewRejectedFolder": {
+        "value": "/path/to/rejected/folder",
+        "description": "Path to store rejected files"
+      },
+      "PIIReviewPythonPath": {
+        "value": "/usr/bin/python3",
+        "description": "Path to Python executable for PyTorch integration"
+      },
+      "PIIReviewPyTorchScript": {
+        "value": "/path/to/pytorch/script.py",
+        "description": "Path to PyTorch PII detection/removal script"
+      }
     },
     "manifest_version": 2
 }
