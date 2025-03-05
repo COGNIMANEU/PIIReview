@@ -54,12 +54,14 @@ class SpecialPIIReview extends SpecialPage {
         if ($isRecursiveSearch && !empty($searchQuery)) {
             $result = $this->scanRecursively($watchFolder, $subPath, $searchQuery);
 
-            // Add search status indicator
+            // Add search status indicator with result count
+            $resultCount = count($result['files']);
             $out->addHTML('
                 <div class="piireview-search-status">
                     <span class="piireview-recursive-search-indicator">' .
                 $this->msg('piireview-recursive-search')->text() . ' "' .
-                htmlspecialchars($searchQuery) . '"</span>
+                htmlspecialchars($searchQuery) . '" - ' .
+                $this->msg('piireview-search-results-count', $resultCount)->text() . '</span>
                     <a href="' . $this->getPageTitle()->getLocalURL(['path' => $subPath]) .
                 '" class="piireview-clear-search">' .
                 $this->msg('piireview-clear-search')->text() . '</a>
@@ -384,43 +386,74 @@ class SpecialPIIReview extends SpecialPage {
 
         $basePath = $subPath ? $folder . '/' . $subPath : $folder;
 
-        // Use RecursiveDirectoryIterator for deep scanning
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($basePath, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::SELF_FIRST
-        );
+        // Make sure the directory exists
+        if (!is_dir($basePath)) {
+            wfDebugLog('PIIReview', "Recursive scan error: Directory not found: $basePath");
+            return $result;
+        }
 
-        foreach ($iterator as $item) {
-            // Only process files, skip directories in results
-            if ($item->isFile()) {
-                $fileName = $item->getFilename();
+        // Get approved and rejected folders to exclude them from search
+        $approvedFolder = $this->getConfig()->get('PIIReviewApprovedFolder', '/tmp/approved');
+        $rejectedFolder = $this->getConfig()->get('PIIReviewRejectedFolder', '/tmp/rejected');
 
-                // If the filename contains the search query (case-insensitive)
-                if (stripos($fileName, $searchQuery) !== false) {
-                    $mime = mime_content_type($item->getPathname());
+        try {
+            // Use RecursiveDirectoryIterator and RecursiveIteratorIterator for deep scanning
+            // FOLLOW_SYMLINKS ensures we follow symbolic links if they exist
+            $directory = new RecursiveDirectoryIterator(
+                $basePath,
+                RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::FOLLOW_SYMLINKS
+            );
 
-                    // Only include image and video files
-                    if (strpos($mime, 'image/') === 0 || strpos($mime, 'video/') === 0) {
-                        // Get the relative path from the base folder
-                        $fileRelativePath = substr($item->getPathname(), strlen($folder) + 1);
-                        $parentPath = dirname($fileRelativePath);
-                        if ($parentPath === '.') {
-                            $parentPath = '';
+            // Set RecursiveIteratorIterator to LEAVES_ONLY to ensure we get all files in all subdirectories
+            $iterator = new RecursiveIteratorIterator(
+                $directory,
+                RecursiveIteratorIterator::LEAVES_ONLY
+            );
+
+            // Create a filter to exclude approved and rejected folders
+            $iterator = new CallbackFilterIterator($iterator, function ($current, $key, $iterator) use ($approvedFolder, $rejectedFolder) {
+                // Skip items in the approved or rejected folders
+                $path = $current->getPathname();
+                return strpos($path, $approvedFolder) !== 0 && strpos($path, $rejectedFolder) !== 0;
+            });
+
+            foreach ($iterator as $item) {
+                // Only process files, skip directories in results
+                if ($item->isFile()) {
+                    $fileName = $item->getFilename();
+
+                    // If the filename contains the search query (case-insensitive)
+                    if (stripos($fileName, $searchQuery) !== false) {
+                        $mime = mime_content_type($item->getPathname());
+
+                        // Only include image and video files
+                        if (strpos($mime, 'image/') === 0 || strpos($mime, 'video/') === 0) {
+                            // Get the relative path from the base folder
+                            $fileRelativePath = substr($item->getPathname(), strlen($folder) + 1);
+                            $parentPath = dirname($fileRelativePath);
+                            if ($parentPath === '.') {
+                                $parentPath = '';
+                            }
+
+                            $result['files'][] = [
+                                'path' => $item->getPathname(),
+                                'name' => $fileName,
+                                'relativePath' => $fileRelativePath,
+                                'parentPath' => $parentPath,  // Store parent path for context
+                                'type' => $mime,
+                                'size' => $item->getSize(),
+                                'modified' => $item->getMTime()
+                            ];
                         }
-
-                        $result['files'][] = [
-                            'path' => $item->getPathname(),
-                            'name' => $fileName,
-                            'relativePath' => $fileRelativePath,
-                            'parentPath' => $parentPath,  // Store parent path for context
-                            'type' => $mime,
-                            'size' => $item->getSize(),
-                            'modified' => $item->getMTime()
-                        ];
                     }
                 }
             }
+        } catch (Exception $e) {
+            wfDebugLog('PIIReview', "Recursive scan error: " . $e->getMessage());
         }
+
+        // Log the search results count
+        wfDebugLog('PIIReview', "Recursive search for '$searchQuery' found " . count($result['files']) . " matching files");
 
         // Sort files by name
         usort($result['files'], function($a, $b) {

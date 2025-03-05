@@ -43,5 +43,6 @@
   "piireview-search-recursive": "Search all folders",
   "piireview-recursive-search": "Recursive search results for",
   "piireview-clear-search": "Clear search",
-  "piireview-location": "Location"
+  "piireview-location": "Location",
+  "piireview-search-results-count": "Found $1 {{PLURAL:$1|file|files}}"
 }
