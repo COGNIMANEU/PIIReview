@@ -35,5 +35,9 @@
   "piireview-approve-success": "File $1 has been approved",
   "piireview-approve-error": "Failed to approve file $1",
   "piireview-reject-success": "File $1 has been rejected",
-  "piireview-reject-error": "Failed to reject file $1"
+  "piireview-reject-error": "Failed to reject file $1",
+  "piireview-root-folder": "Root",
+  "piireview-current-folder": "Current folder:",
+  "piireview-parent-folder": "Parent folder",
+  "piireview-no-files-in-folder": "No files in this folder"
 }

@@ -15,6 +15,10 @@ class SpecialPIIReview extends SpecialPage {
 
         $out->addModules('ext.PIIReview');
 
+        // Get the current subfolder from the request, if any
+        $request = $this->getRequest();
+        $subPath = $request->getText('path', '');
+
         // Process form submissions
         $this->handleFormSubmissions();
 
@@ -37,6 +41,17 @@ class SpecialPIIReview extends SpecialPage {
                     </div>
                 </div>
             </div>
+    ');
+
+        // Scan the watch folder for files and directories
+        $watchFolder = $this->getConfig()->get('PIIReviewWatchFolder');
+        $result = $this->scanWatchFolder($watchFolder, $subPath);
+
+        // Add folder navigation
+        $this->displayFolderNavigation($watchFolder, $result['currentPath']);
+
+        // Add filters and search
+        $out->addHTML('
             <div class="piireview-filters">
                 <div class="piireview-search">
                     <input type="text" placeholder="' . $this->msg('piireview-search-placeholder')->text() . '" class="piireview-search-input">
@@ -59,14 +74,18 @@ class SpecialPIIReview extends SpecialPage {
             <div class="piireview-content">
     ');
 
-        // Scan the watch folder for new files
-        $watchFolder = $this->getConfig()->get('PIIReviewWatchFolder');
-        $files = $this->scanWatchFolder($watchFolder);
+        // Display directories first
+        foreach ($result['directories'] as $dir) {
+            $this->displayDirectoryCard($dir);
+        }
 
-        if (empty($files)) {
-            $out->addHTML('<div class="piireview-empty">' . $this->msg('piireview-no-files')->text() . '</div>');
+        // Then display files
+        if (empty($result['files'])) {
+            if (empty($result['directories'])) {
+                $out->addHTML('<div class="piireview-empty">' . $this->msg('piireview-no-files')->text() . '</div>');
+            }
         } else {
-            foreach ($files as $file) {
+            foreach ($result['files'] as $file) {
                 $this->displayFileCard($file);
             }
         }
@@ -75,6 +94,90 @@ class SpecialPIIReview extends SpecialPage {
             </div>
         </div>
     ');
+    }
+
+    /**
+     * Display the folder navigation breadcrumb and path controls
+     *
+     * @param string $baseFolder The base watch folder
+     * @param string $currentPath The current relative path within the watch folder
+     */
+    private function displayFolderNavigation($baseFolder, $currentPath) {
+        $out = $this->getOutput();
+
+        // Build breadcrumb segments
+        $pathParts = $currentPath ? explode('/', $currentPath) : [];
+        $breadcrumbs = [];
+
+        // Start with root
+        $breadcrumbs[] = [
+            'name' => $this->msg('piireview-root-folder')->text(),
+            'path' => '',
+        ];
+
+        // Add intermediate paths
+        $currentSegment = '';
+        foreach ($pathParts as $part) {
+            $currentSegment = $currentSegment ? $currentSegment . '/' . $part : $part;
+            $breadcrumbs[] = [
+                'name' => $part,
+                'path' => $currentSegment,
+            ];
+        }
+
+        // Build the breadcrumb HTML
+        $breadcrumbHtml = '<div class="piireview-breadcrumb">';
+        $isFirst = true;
+
+        foreach ($breadcrumbs as $crumb) {
+            if (!$isFirst) {
+                $breadcrumbHtml .= ' <span class="piireview-breadcrumb-separator">/</span> ';
+            }
+
+            $isLast = ($crumb === end($breadcrumbs));
+
+            if ($isLast) {
+                $breadcrumbHtml .= '<span class="piireview-breadcrumb-current">' . htmlspecialchars($crumb['name']) . '</span>';
+            } else {
+                $breadcrumbHtml .= '<a href="' . $this->getPageTitle()->getLocalURL(['path' => $crumb['path']]) .
+                    '" class="piireview-breadcrumb-link">' . htmlspecialchars($crumb['name']) . '</a>';
+            }
+
+            $isFirst = false;
+        }
+
+        $breadcrumbHtml .= '</div>';
+
+        // Display full folder path
+        $fullPathHtml = '<div class="piireview-full-path">' .
+            $this->msg('piireview-current-folder')->escaped() . ' ' .
+            htmlspecialchars($baseFolder . ($currentPath ? '/' . $currentPath : '')) .
+            '</div>';
+
+        // Add to output
+        $out->addHTML('<div class="piireview-navigation">' . $breadcrumbHtml . $fullPathHtml . '</div>');
+    }
+
+    /**
+     * Display a directory card for navigation
+     *
+     * @param array $dir Directory information
+     */
+    private function displayDirectoryCard($dir) {
+        $html = '
+    <div class="piireview-directory-card">
+        <a href="' . $this->getPageTitle()->getLocalURL(['path' => $dir['path']]) . '" class="piireview-directory-link">
+            <div class="piireview-directory-icon"></div>
+            <div class="piireview-directory-name">' . htmlspecialchars($dir['name']) . '</div>
+            <div class="piireview-directory-info">
+                <span class="piireview-directory-date">' .
+            $this->getLanguage()->timeanddate(wfTimestamp(TS_MW, $dir['modified']), true) .
+            '</span>
+            </div>
+        </a>
+    </div>';
+
+        $this->getOutput()->addHTML($html);
     }
 
     private function handleFormSubmissions() {
@@ -168,26 +271,66 @@ class SpecialPIIReview extends SpecialPage {
         }
     }
 
-    private function scanWatchFolder($folder) {
-        $files = [];
-        if (is_dir($folder)) {
-            $iterator = new DirectoryIterator($folder);
-            foreach ($iterator as $fileInfo) {
-                if ($fileInfo->isFile()) {
-                    $mime = mime_content_type($fileInfo->getPathname());
-                    if (strpos($mime, 'image/') === 0 || strpos($mime, 'video/') === 0) {
-                        $files[] = [
-                            'path' => $fileInfo->getPathname(),
-                            'name' => $fileInfo->getFilename(),
-                            'type' => $mime,
-                            'size' => $fileInfo->getSize(),
-                            'modified' => $fileInfo->getMTime()
-                        ];
-                    }
+    /**
+     * Scan the watch folder and return files and directories
+     *
+     * @param string $folder Base folder to scan
+     * @param string $subPath Optional sub-path within base folder
+     * @return array Array containing 'files' and 'directories'
+     */
+    private function scanWatchFolder($folder, $subPath = '') {
+        $result = [
+            'files' => [],
+            'directories' => [],
+            'currentPath' => $subPath
+        ];
+
+        $fullPath = $subPath ? $folder . '/' . $subPath : $folder;
+
+        if (!is_dir($fullPath)) {
+            return $result;
+        }
+
+        $iterator = new DirectoryIterator($fullPath);
+        foreach ($iterator as $item) {
+            // Skip . and .. directories
+            if ($item->isDot()) {
+                continue;
+            }
+
+            $relativePath = $subPath ? $subPath . '/' . $item->getFilename() : $item->getFilename();
+
+            if ($item->isDir()) {
+                $result['directories'][] = [
+                    'name' => $item->getFilename(),
+                    'path' => $relativePath,
+                    'modified' => $item->getMTime()
+                ];
+            } else if ($item->isFile()) {
+                $mime = mime_content_type($item->getPathname());
+                if (strpos($mime, 'image/') === 0 || strpos($mime, 'video/') === 0) {
+                    $result['files'][] = [
+                        'path' => $item->getPathname(),
+                        'name' => $item->getFilename(),
+                        'relativePath' => $relativePath,
+                        'type' => $mime,
+                        'size' => $item->getSize(),
+                        'modified' => $item->getMTime()
+                    ];
                 }
             }
         }
-        return $files;
+
+        // Sort directories and files by name
+        usort($result['directories'], function($a, $b) {
+            return strcasecmp($a['name'], $b['name']);
+        });
+
+        usort($result['files'], function($a, $b) {
+            return strcasecmp($a['name'], $b['name']);
+        });
+
+        return $result;
     }
 
     private function displayFileCard($file) {

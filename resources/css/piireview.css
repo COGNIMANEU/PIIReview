@@ -135,6 +135,18 @@
     border: 1px solid #c3e6cb;
 }
 
+.piireview-status-processing {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.piireview-status-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
 /* Actions area */
 .piireview-card-actions {
     padding: 15px;
@@ -201,4 +213,154 @@
     font-size: 14px;
     min-height: 60px;
     resize: vertical;
+}
+
+/* Processing state */
+.piireview-processing .piireview-image-container {
+    opacity: 0.7;
+}
+
+.piireview-processing .piireview-button-process {
+    background-color: #6c757d;
+    pointer-events: none;
+}
+
+/* Highlight animation */
+@keyframes pulse {
+    0% { opacity: 0.2; }
+    50% { opacity: 0.5; }
+    100% { opacity: 0.2; }
+}
+
+.pii-highlight {
+    animation: pulse 2s infinite;
+}
+
+/* Button highlight */
+.piireview-button-highlight {
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.7);
+}
+
+/* Folder navigation */
+.piireview-navigation {
+    padding: 15px;
+    margin-bottom: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.piireview-breadcrumb {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.piireview-breadcrumb-link {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.piireview-breadcrumb-link:hover {
+    text-decoration: underline;
+}
+
+.piireview-breadcrumb-current {
+    font-weight: bold;
+    color: #495057;
+}
+
+.piireview-breadcrumb-separator {
+    color: #6c757d;
+    margin: 0 4px;
+}
+
+.piireview-full-path {
+    font-size: 12px;
+    color: #6c757d;
+    font-family: monospace;
+    background: #e9ecef;
+    padding: 5px 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* Directory card styling */
+.piireview-directory-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease-in-out;
+    margin-bottom: 1em;
+}
+
+.piireview-directory-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background-color: #f8f9fa;
+}
+
+.piireview-directory-link {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.piireview-directory-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffc107"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.piireview-directory-name {
+    flex-grow: 1;
+    font-weight: bold;
+    font-size: 14px;
+    color: #212529;
+}
+
+.piireview-directory-info {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* Make the content area a grid for both files and folders */
+.piireview-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Focused item styling */
+.piireview-focused {
+    outline: 3px solid #007bff !important;
+    z-index: 10;
+    position: relative;
+}
+
+/* Root indicator in the breadcrumb */
+.piireview-breadcrumb-link:first-child {
+    display: inline-flex;
+    align-items: center;
+}
+
+.piireview-breadcrumb-link:first-child:before {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23007bff"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 }
