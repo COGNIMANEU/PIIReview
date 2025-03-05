@@ -8,6 +8,7 @@
             this.initProcessButton();
             this.initBatchControls();
             this.initKeyboardNavigation();
+            this.initRecursiveSearch();
 
             // Update any dynamic elements after init
             this.updateUI();
@@ -123,8 +124,13 @@
                 });
             });
 
-            // Initialize search
+            // Initialize search (modified to handle non-recursive search)
             $('.piireview-search-input').on('input', function() {
+                // If recursive search is enabled, don't filter client-side
+                if ($('.piireview-recursive-search-checkbox').prop('checked')) {
+                    return;
+                }
+
                 var query = $(this).val().toLowerCase();
 
                 $('.piireview-card, .piireview-directory-card').each(function() {
@@ -199,6 +205,42 @@
                 } else if (filter === 'clear') {
                     $('.piireview-card').hide();
                     $('.piireview-status-clear').closest('.piireview-card').show();
+                }
+            });
+        },
+
+        initRecursiveSearch: function() {
+            // Handle recursive search submission
+            $('.piireview-search-input').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    var searchQuery = $(this).val().trim();
+                    var isRecursive = $('.piireview-recursive-search-checkbox').prop('checked');
+
+                    if (searchQuery && isRecursive) {
+                        // Get current path
+                        var currentUrl = new URL(window.location.href);
+                        var currentPath = currentUrl.searchParams.get('path') || '';
+
+                        // Redirect to same page with search parameters
+                        window.location.href = mw.util.getUrl(null, {
+                            'path': currentPath,
+                            'search': searchQuery,
+                            'recursive': '1'
+                        });
+                    }
+                }
+            });
+
+            // Clear search when checkbox is unchecked if we're in a recursive search
+            $('.piireview-recursive-search-checkbox').on('change', function() {
+                if (!$(this).prop('checked')) {
+                    var currentUrl = new URL(window.location.href);
+                    if (currentUrl.searchParams.get('recursive')) {
+                        // Return to the same path without search parameters
+                        window.location.href = mw.util.getUrl(null, {
+                            'path': currentUrl.searchParams.get('path') || ''
+                        });
+                    }
                 }
             });
         },

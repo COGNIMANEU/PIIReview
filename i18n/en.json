@@ -39,5 +39,9 @@
   "piireview-root-folder": "Root",
   "piireview-current-folder": "Current folder:",
   "piireview-parent-folder": "Parent folder",
-  "piireview-no-files-in-folder": "No files in this folder"
+  "piireview-no-files-in-folder": "No files in this folder",
+  "piireview-search-recursive": "Search all folders",
+  "piireview-recursive-search": "Recursive search results for",
+  "piireview-clear-search": "Clear search",
+  "piireview-location": "Location"
 }

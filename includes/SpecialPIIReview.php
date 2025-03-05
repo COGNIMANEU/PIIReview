@@ -19,6 +19,10 @@ class SpecialPIIReview extends SpecialPage {
         $request = $this->getRequest();
         $subPath = $request->getText('path', '');
 
+        // Check if we're doing a recursive search
+        $searchQuery = $request->getText('search', '');
+        $isRecursiveSearch = $request->getBool('recursive', false);
+
         // Process form submissions
         $this->handleFormSubmissions();
 
@@ -45,16 +49,40 @@ class SpecialPIIReview extends SpecialPage {
 
         // Scan the watch folder for files and directories
         $watchFolder = $this->getConfig()->get('PIIReviewWatchFolder');
-        $result = $this->scanWatchFolder($watchFolder, $subPath);
 
-        // Add folder navigation
-        $this->displayFolderNavigation($watchFolder, $result['currentPath']);
+        // If we're doing a recursive search, use the recursive scanner
+        if ($isRecursiveSearch && !empty($searchQuery)) {
+            $result = $this->scanRecursively($watchFolder, $subPath, $searchQuery);
+
+            // Add search status indicator
+            $out->addHTML('
+                <div class="piireview-search-status">
+                    <span class="piireview-recursive-search-indicator">' .
+                $this->msg('piireview-recursive-search')->text() . ' "' .
+                htmlspecialchars($searchQuery) . '"</span>
+                    <a href="' . $this->getPageTitle()->getLocalURL(['path' => $subPath]) .
+                '" class="piireview-clear-search">' .
+                $this->msg('piireview-clear-search')->text() . '</a>
+                </div>
+            ');
+        } else {
+            $result = $this->scanWatchFolder($watchFolder, $subPath);
+        }
+
+        // Add folder navigation (only if not in recursive search)
+        if (!$isRecursiveSearch) {
+            $this->displayFolderNavigation($watchFolder, $result['currentPath']);
+        }
 
         // Add filters and search
         $out->addHTML('
             <div class="piireview-filters">
                 <div class="piireview-search">
-                    <input type="text" placeholder="' . $this->msg('piireview-search-placeholder')->text() . '" class="piireview-search-input">
+                    <input type="text" placeholder="' . $this->msg('piireview-search-placeholder')->text() . '" class="piireview-search-input" value="' . htmlspecialchars($searchQuery) . '">
+                    <label class="piireview-recursive-search-label">
+                        <input type="checkbox" class="piireview-recursive-search-checkbox" ' . ($isRecursiveSearch ? 'checked' : '') . '>
+                        ' . $this->msg('piireview-search-recursive')->text() . '
+                    </label>
                 </div>
                 <div class="piireview-sort">
                     <select class="piireview-sort-select">
@@ -74,14 +102,16 @@ class SpecialPIIReview extends SpecialPage {
             <div class="piireview-content">
     ');
 
-        // Display directories first
-        foreach ($result['directories'] as $dir) {
-            $this->displayDirectoryCard($dir);
+        // Display directories first (but not during recursive search)
+        if (!$isRecursiveSearch) {
+            foreach ($result['directories'] as $dir) {
+                $this->displayDirectoryCard($dir);
+            }
         }
 
         // Then display files
         if (empty($result['files'])) {
-            if (empty($result['directories'])) {
+            if (empty($result['directories']) || $isRecursiveSearch) {
                 $out->addHTML('<div class="piireview-empty">' . $this->msg('piireview-no-files')->text() . '</div>');
             }
         } else {
@@ -333,8 +363,84 @@ class SpecialPIIReview extends SpecialPage {
         return $result;
     }
 
+    /**
+     * Scan the watch folder recursively and return files matching the search query
+     *
+     * @param string $folder Base folder to scan
+     * @param string $subPath Optional sub-path within base folder
+     * @param string $searchQuery Search query to match against file names
+     * @return array Array containing 'files' and 'directories'
+     */
+    private function scanRecursively($folder, $subPath = '', $searchQuery = '') {
+        $result = [
+            'files' => [],
+            'directories' => [],
+            'currentPath' => $subPath
+        ];
+
+        if (empty($searchQuery)) {
+            return $result;
+        }
+
+        $basePath = $subPath ? $folder . '/' . $subPath : $folder;
+
+        // Use RecursiveDirectoryIterator for deep scanning
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($basePath, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            // Only process files, skip directories in results
+            if ($item->isFile()) {
+                $fileName = $item->getFilename();
+
+                // If the filename contains the search query (case-insensitive)
+                if (stripos($fileName, $searchQuery) !== false) {
+                    $mime = mime_content_type($item->getPathname());
+
+                    // Only include image and video files
+                    if (strpos($mime, 'image/') === 0 || strpos($mime, 'video/') === 0) {
+                        // Get the relative path from the base folder
+                        $fileRelativePath = substr($item->getPathname(), strlen($folder) + 1);
+                        $parentPath = dirname($fileRelativePath);
+                        if ($parentPath === '.') {
+                            $parentPath = '';
+                        }
+
+                        $result['files'][] = [
+                            'path' => $item->getPathname(),
+                            'name' => $fileName,
+                            'relativePath' => $fileRelativePath,
+                            'parentPath' => $parentPath,  // Store parent path for context
+                            'type' => $mime,
+                            'size' => $item->getSize(),
+                            'modified' => $item->getMTime()
+                        ];
+                    }
+                }
+            }
+        }
+
+        // Sort files by name
+        usort($result['files'], function($a, $b) {
+            return strcasecmp($a['name'], $b['name']);
+        });
+
+        return $result;
+    }
+
     private function displayFileCard($file) {
         $fileId = md5($file['path']); // Generate unique ID for the file
+
+        // Check if we need to display the parent folder info (for recursive search)
+        $parentFolderInfo = '';
+        if (isset($file['parentPath']) && !empty($file['parentPath'])) {
+            $parentFolderInfo = '<div class="piireview-parent-path">' .
+                $this->msg('piireview-location')->text() . ': ' .
+                '<a href="' . $this->getPageTitle()->getLocalURL(['path' => $file['parentPath']]) . '">' .
+                htmlspecialchars($file['parentPath']) . '</a></div>';
+        }
 
         $html = '
     <div class="piireview-card" id="card-' . $fileId . '">
@@ -345,6 +451,7 @@ class SpecialPIIReview extends SpecialPage {
                 <span class="piireview-filesize">' . $this->formatFileSize($file['size']) . '</span>
                 <span class="piireview-date">' . $this->getLanguage()->timeanddate(wfTimestamp(TS_MW, $file['modified']), true) . '</span>
             </span>
+            ' . $parentFolderInfo . '
         </div>
         <div class="piireview-card-content">';
 
@@ -406,7 +513,7 @@ class SpecialPIIReview extends SpecialPage {
         $this->getOutput()->addHTML($html);
     }
 
-// Helper method to format file size
+    // Helper method to format file size
     private function formatFileSize($bytes): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
