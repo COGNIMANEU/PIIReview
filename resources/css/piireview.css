@@ -443,8 +443,6 @@
     text-decoration: underline;
 }
 
-/* Comprehensive fix for both navigation and search result views */
-
 /* Batch Controls spacing */
 .piireview-batch-controls {
     margin-bottom: 20px;
@@ -460,94 +458,46 @@
     margin-bottom: 15px;
 }
 
-/* ===== DROPDOWN SPACING FIXES ===== */
-
-/* General fix for all dropdowns */
-select {
-    display: block !important;
-}
-
-/* Target the "Sort by Name" dropdown */
+/* Dropdown spacing fixes */
 select[name="sort"],
 select[id="sort"],
 select[name="sort-by"],
-select#sort-by-name,
-select[id^="sort"],
-select[name^="sort"] {
+#sort-by-name {
     margin-bottom: 15px !important;
-    display: block !important;
 }
 
-/* Target the "All Files" dropdown with much larger margin */
 select[name="filter"],
 select[id="filter"],
 select[name="filter-by"],
-select.filter-select,
-select#filter-files,
-select[id^="All Files"],
-select[name^="filter"],
-select[id^="filter"] {
-    margin-bottom: 45px !important;
-    display: block !important;
-}
-
-/* Extra target for the second select element in a sequence */
-form select:nth-of-type(2),
-div select:nth-of-type(2),
-select:nth-of-type(2) {
+#filter-files {
     margin-bottom: 45px !important;
 }
 
-/* ===== SEARCH RESULTS SPECIFIC FIXES ===== */
+/* Fix for folder display */
+.folder-icon,
+img[src*="folder"] {
+    vertical-align: middle;
+    margin-right: 10px;
+}
 
-/* Fix for search results container */
+.directory-card,
+div:has(> img[src*="folder"]) {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: #fff;
+}
+
+/* Fix for search results spacing */
 .search-results,
-div[class*="search-results"],
-div:has(> .clear-search),
-div:has(.recursive-search) {
-    margin-bottom: 20px !important;
+div:has(> .clear-search) {
+    margin-bottom: 20px;
 }
 
-/* Target the search input specifically */
-input[type="text"][name="search"],
-input[type="search"],
-input[class*="search-input"],
-input[placeholder*="Search"],
-input#search-files {
-    margin-bottom: 15px !important;
-    display: block !important;
-}
-
-/* Fix for search results notification area */
-div:has(> span:contains("search results")),
-div:has(> a.clear-search),
+/* Additional spacing for search mode */
 .search-notification,
 .search-status,
-.piireview-search-status,
 .recursive-search-results {
-    margin-bottom: 30px !important;
-    display: block !important;
-}
-
-/* Apply larger spacing after the search filters when in search mode */
-body:has(.search-results) select:nth-of-type(2),
-body:has(.recursive-search) select:nth-of-type(2),
-body:has(.clear-search) select:nth-of-type(2) {
-    margin-bottom: 50px !important;
-}
-
-/* Target content area for both views */
-.piireview-content,
-.directory-listing,
-div:has(> .directory-card),
-div:has(> .file-card),
-div:has(> div[class*="card"]) {
-    margin-top: 25px !important;
-}
-
-/* Add spacing when search results are shown */
-div:has(> .search-results) + div,
-div:has(> .recursive-search) + div,
-div:has(> .clear-search) + div {
-    margin-top: 25px !important;
+    margin-bottom: 20px;
 }
