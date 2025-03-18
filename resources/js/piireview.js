@@ -215,14 +215,14 @@
             $(document).on('click', '.piireview-button-process', function() {
                 var fileId = $(this).data('file-id');
                 var card = $('#card-' + fileId);
-
+        
                 // Show processing indicator
                 card.addClass('piireview-processing');
                 card.find('.piireview-status-indicator')
                     .removeClass('piireview-status-detected piireview-status-clear')
                     .addClass('piireview-status-processing')
                     .text(mw.msg('piireview-processing'));
-
+        
                 // This would be replaced with actual AJAX call to PyTorch component
                 setTimeout(function() {
                     // Simulate processing completion
@@ -231,12 +231,12 @@
                         .removeClass('piireview-status-processing')
                         .addClass('piireview-status-clear')
                         .text(mw.msg('piireview-pii-removed'));
-
-                    // Update button state
+        
+                    // Update button state using the pre-rendered text from the hidden element
                     card.find('.piireview-button-process')
                         .removeClass('piireview-button-highlight')
                         .prop('disabled', true)
-                        .text(mw.msg('piireview-processed'));
+                        .text(card.find('.piireview-processed-text').text());
                 }, 2000); // Simulate processing time
             });
         },

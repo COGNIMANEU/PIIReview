@@ -515,7 +515,10 @@ class SpecialPIIReview extends SpecialPage {
 
     private function displayFileCard($file) {
         $fileId = md5($file['path']); // Generate unique ID for the file
-
+        
+        // Get the localized text for "processed" once
+        $msgProcessed = $this->msg('piireview-processed')->text();
+    
         // Check if we need to display the parent folder info (for recursive search)
         $parentFolderInfo = '';
         if (isset($file['parentPath']) && !empty($file['parentPath'])) {
@@ -524,20 +527,20 @@ class SpecialPIIReview extends SpecialPage {
                 '<a href="' . $this->getPageTitle()->getLocalURL(['path' => $file['parentPath']]) . '">' .
                 htmlspecialchars($file['parentPath']) . '</a></div>';
         }
-
+    
         $html = '
-    <div class="piireview-card" id="card-' . $fileId . '">
-        <div class="piireview-card-header">
-            <h3>' . htmlspecialchars($file['name']) . '</h3>
-            <span class="piireview-metadata">
-                <span class="piireview-filetype">' . htmlspecialchars($file['type']) . '</span>
-                <span class="piireview-filesize">' . $this->formatFileSize($file['size']) . '</span>
-                <span class="piireview-date">' . $this->getLanguage()->timeanddate(wfTimestamp(TS_MW, $file['modified']), true) . '</span>
-            </span>
-            ' . $parentFolderInfo . '
-        </div>
-        <div class="piireview-card-content">';
-
+        <div class="piireview-card" id="card-' . $fileId . '">
+            <div class="piireview-card-header">
+                <h3>' . htmlspecialchars($file['name']) . '</h3>
+                <span class="piireview-metadata">
+                    <span class="piireview-filetype">' . htmlspecialchars($file['type']) . '</span>
+                    <span class="piireview-filesize">' . $this->formatFileSize($file['size']) . '</span>
+                    <span class="piireview-date">' . $this->getLanguage()->timeanddate(wfTimestamp(TS_MW, $file['modified']), true) . '</span>
+                </span>
+                ' . $parentFolderInfo . '
+            </div>
+            <div class="piireview-card-content">';
+    
         if (strpos($file['type'], 'image/') === 0) {
             // Add image preview with zoom capability
             $html .= '<div class="piireview-image-container">
@@ -559,40 +562,42 @@ class SpecialPIIReview extends SpecialPage {
                     Your browser does not support video playback.
                   </video>';
         }
-
+    
         // Add PII detection status indicator
         $html .= '<div class="piireview-pii-status">
                 <span class="piireview-status-indicator piireview-status-scanning">
                     ' . $this->msg('piireview-scanning')->text() . '
                 </span>
               </div>';
-
+    
         $html .= '
-        </div>
-        <div class="piireview-card-actions">
-            <form method="post" class="piireview-controls">
-                <input type="hidden" name="file" value="' . htmlspecialchars($file['path']) . '">
-                <input type="hidden" name="file_id" value="' . $fileId . '">
-
-                <div class="piireview-action-buttons">
-                    <button type="submit" name="action" value="approve" class="piireview-button-approve">
-                        ' . $this->msg('piireview-approve')->text() . '
-                    </button>
-                    <button type="submit" name="action" value="reject" class="piireview-button-reject">
-                        ' . $this->msg('piireview-reject')->text() . '
-                    </button>
-                    <button type="button" class="piireview-button-process" data-file-id="' . $fileId . '">
-                        ' . $this->msg('piireview-process-pii')->text() . '
-                    </button>
-                </div>
-
-                <div class="piireview-notes">
-                    <textarea name="review_notes" placeholder="' . $this->msg('piireview-notes-placeholder')->text() . '"></textarea>
-                </div>
-            </form>
-        </div>
-    </div>';
-
+            </div>
+            <div class="piireview-card-actions">
+                <form method="post" class="piireview-controls">
+                    <input type="hidden" name="file" value="' . htmlspecialchars($file['path']) . '">
+                    <input type="hidden" name="file_id" value="' . $fileId . '">
+    
+                    <div class="piireview-action-buttons">
+                        <button type="submit" name="action" value="approve" class="piireview-button-approve">
+                            ' . $this->msg('piireview-approve')->text() . '
+                        </button>
+                        <button type="submit" name="action" value="reject" class="piireview-button-reject">
+                            ' . $this->msg('piireview-reject')->text() . '
+                        </button>
+                        <button type="button" class="piireview-button-process" data-file-id="' . $fileId . '">
+                            ' . $this->msg('piireview-process-pii')->text() . '
+                        </button>
+                        <!-- Add hidden element with processed text -->
+                        <span class="piireview-processed-text" style="display:none;">' . $msgProcessed . '</span>
+                    </div>
+    
+                    <div class="piireview-notes">
+                        <textarea name="review_notes" placeholder="' . $this->msg('piireview-notes-placeholder')->text() . '"></textarea>
+                    </div>
+                </form>
+            </div>
+        </div>';
+    
         $this->getOutput()->addHTML($html);
     }
 
