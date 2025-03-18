@@ -25,7 +25,7 @@ class SpecialPIIReview extends SpecialPage {
 
         // Process form submissions
         $this->handleFormSubmissions();
-
+        $this->addModalHTML();
         // Add batch controls and progress tracking
         $out->addHTML('
         <div class="piireview-container">
@@ -127,6 +127,44 @@ class SpecialPIIReview extends SpecialPage {
         </div>
     ');
     }
+
+    private function addModalHTML() {
+        $out = $this->getOutput();
+        
+        $modalHTML = '
+        <div id="piireview-modal" class="piireview-modal">
+            <div class="piireview-modal-content">
+                <span class="piireview-modal-close">&times;</span>
+                <div class="piireview-modal-header">
+                    <h3 class="piireview-modal-title"></h3>
+                    <div class="piireview-modal-metadata"></div>
+                </div>
+                <div class="piireview-modal-body">
+                    <div class="piireview-modal-image-container">
+                        <img class="piireview-modal-image" src="" alt="Full size preview">
+                        <div class="piireview-modal-image-controls">
+                            <button class="piireview-modal-zoom-in" title="' . $this->msg('piireview-zoom-in')->text() . '">+</button>
+                            <button class="piireview-modal-zoom-out" title="' . $this->msg('piireview-zoom-out')->text() . '">-</button>
+                            <button class="piireview-modal-zoom-reset" title="' . $this->msg('piireview-zoom-reset')->text() . '">↺</button>
+                        </div>
+                        <div class="piireview-modal-pii-status"></div>
+                    </div>
+                </div>
+                <div class="piireview-modal-footer">
+                    <div class="piireview-modal-action-buttons">
+                        <button class="piireview-modal-approve">' . $this->msg('piireview-approve')->text() . '</button>
+                        <button class="piireview-modal-reject">' . $this->msg('piireview-reject')->text() . '</button>
+                        <button class="piireview-modal-process">' . $this->msg('piireview-process-pii')->text() . '</button>
+                    </div>
+                    <div class="piireview-modal-notes">
+                        <textarea placeholder="' . $this->msg('piireview-notes-placeholder')->text() . '"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>';
+        
+        $out->addHTML($modalHTML);
+    }    
 
     /**
      * Display the folder navigation breadcrumb and path controls

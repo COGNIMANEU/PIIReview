@@ -18,38 +18,48 @@
         initImageModal: function() {
             // Create modal container if it doesn't exist
             if ($('#piireview-modal').length === 0) {
-                $('body').append(`
-            <div id="piireview-modal" class="piireview-modal">
-                <div class="piireview-modal-content">
-                    <span class="piireview-modal-close">&times;</span>
-                    <div class="piireview-modal-header">
-                        <h3 class="piireview-modal-title"></h3>
-                        <div class="piireview-modal-metadata"></div>
-                    </div>
-                    <div class="piireview-modal-body">
-                        <div class="piireview-modal-image-container">
-                            <img class="piireview-modal-image" src="" alt="Full size preview">
-                            <div class="piireview-modal-image-controls">
-                                <button class="piireview-modal-zoom-in" title="${mw.msg('piireview-zoom-in')}">+</button>
-                                <button class="piireview-modal-zoom-out" title="${mw.msg('piireview-zoom-out')}">-</button>
-                                <button class="piireview-modal-zoom-reset" title="${mw.msg('piireview-zoom-reset')}">↺</button>
-                            </div>
-                            <div class="piireview-modal-pii-status"></div>
-                        </div>
-                    </div>
-                    <div class="piireview-modal-footer">
-                        <div class="piireview-modal-action-buttons">
-                            <button class="piireview-modal-approve">${mw.msg('piireview-approve')}</button>
-                            <button class="piireview-modal-reject">${mw.msg('piireview-reject')}</button>
-                            <button class="piireview-modal-process">${mw.msg('piireview-process-pii')}</button>
-                        </div>
-                        <div class="piireview-modal-notes">
-                            <textarea placeholder="${mw.msg('piireview-notes-placeholder')}"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `);
+                // First, get the properly localized messages
+                var msgApprove = mw.message('piireview-approve').text();
+                var msgReject = mw.message('piireview-reject').text();
+                var msgProcessPii = mw.message('piireview-process-pii').text();
+                var msgZoomIn = mw.message('piireview-zoom-in').text();
+                var msgZoomOut = mw.message('piireview-zoom-out').text();
+                var msgZoomReset = mw.message('piireview-zoom-reset').text();
+                var msgNotesPlaceholder = mw.message('piireview-notes-placeholder').text();
+            
+                // Then use these variables in the HTML creation
+                $('body').append(
+                    '<div id="piireview-modal" class="piireview-modal">' +
+                        '<div class="piireview-modal-content">' +
+                            '<span class="piireview-modal-close">&times;</span>' +
+                            '<div class="piireview-modal-header">' +
+                                '<h3 class="piireview-modal-title"></h3>' +
+                                '<div class="piireview-modal-metadata"></div>' +
+                            '</div>' +
+                            '<div class="piireview-modal-body">' +
+                                '<div class="piireview-modal-image-container">' +
+                                    '<img class="piireview-modal-image" src="" alt="Full size preview">' +
+                                    '<div class="piireview-modal-image-controls">' +
+                                        '<button class="piireview-modal-zoom-in" title="' + msgZoomIn + '">+</button>' +
+                                        '<button class="piireview-modal-zoom-out" title="' + msgZoomOut + '">-</button>' +
+                                        '<button class="piireview-modal-zoom-reset" title="' + msgZoomReset + '">↺</button>' +
+                                    '</div>' +
+                                    '<div class="piireview-modal-pii-status"></div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="piireview-modal-footer">' +
+                                '<div class="piireview-modal-action-buttons">' +
+                                    '<button class="piireview-modal-approve">' + msgApprove + '</button>' +
+                                    '<button class="piireview-modal-reject">' + msgReject + '</button>' +
+                                    '<button class="piireview-modal-process">' + msgProcessPii + '</button>' +
+                                '</div>' +
+                                '<div class="piireview-modal-notes">' +
+                                    '<textarea placeholder="' + msgNotesPlaceholder + '"></textarea>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>'
+                );
             }
 
             // Open modal when clicking on image or card
@@ -141,7 +151,7 @@
             $(document).on('click', '.piireview-modal-process', function() {
                 var fileId = $('#piireview-modal').data('file-id');
                 $('#card-' + fileId).find('.piireview-button-process').trigger('click');
-                $(this).prop('disabled', true).text(mw.msg('piireview-processed'));
+                $(this).prop('disabled', true).text(mw.message('piireview-processed').text());
             });
 
             // Keyboard navigation in modal
