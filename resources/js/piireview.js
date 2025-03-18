@@ -189,23 +189,23 @@
             $('.piireview-card').each(function() {
                 var card = $(this);
                 var statusIndicator = card.find('.piireview-status-indicator');
-
+        
                 // Simulate async PII detection process
                 setTimeout(function() {
                     // This would be replaced with actual PyTorch integration
                     var hasPII = Math.random() > 0.5; // Simulate random detection
-
+        
                     if (hasPII) {
                         statusIndicator.removeClass('piireview-status-scanning')
                             .addClass('piireview-status-detected')
-                            .text(mw.msg('piireview-pii-detected'));
-
+                            .text(card.find('.piireview-text-pii-detected').text());
+        
                         // Highlight the process button for PII detected
                         card.find('.piireview-button-process').addClass('piireview-button-highlight');
                     } else {
                         statusIndicator.removeClass('piireview-status-scanning')
                             .addClass('piireview-status-clear')
-                            .text(mw.msg('piireview-no-pii'));
+                            .text(card.find('.piireview-text-no-pii').text());
                     }
                 }, 1500 + Math.random() * 1000); // Random delay for simulation
             });
@@ -221,7 +221,7 @@
                 card.find('.piireview-status-indicator')
                     .removeClass('piireview-status-detected piireview-status-clear')
                     .addClass('piireview-status-processing')
-                    .text(mw.msg('piireview-processing'));
+                    .text(card.find('.piireview-text-processing').text());
         
                 // This would be replaced with actual AJAX call to PyTorch component
                 setTimeout(function() {
@@ -230,7 +230,7 @@
                     card.find('.piireview-status-indicator')
                         .removeClass('piireview-status-processing')
                         .addClass('piireview-status-clear')
-                        .text(mw.msg('piireview-pii-removed'));
+                        .text(card.find('.piireview-text-pii-removed').text());
         
                     // Update button state using the pre-rendered text from the hidden element
                     card.find('.piireview-button-process')

@@ -131,15 +131,22 @@ class SpecialPIIReview extends SpecialPage {
     private function addModalHTML() {
         $out = $this->getOutput();
         
-        // Preload all message strings for proper localization
+        // Preload all the message strings to make sure they're properly localized
         $msgApprove = $this->msg('piireview-approve')->text();
         $msgReject = $this->msg('piireview-reject')->text();
         $msgProcessPii = $this->msg('piireview-process-pii')->text();
-        $msgProcessed = $this->msg('piireview-processed')->text(); // Add the processed text
+        $msgProcessed = $this->msg('piireview-processed')->text();
         $msgZoomIn = $this->msg('piireview-zoom-in')->text();
         $msgZoomOut = $this->msg('piireview-zoom-out')->text();
         $msgZoomReset = $this->msg('piireview-zoom-reset')->text();
         $msgNotesPlaceholder = $this->msg('piireview-notes-placeholder')->text();
+        
+        // Also get all status texts
+        $msgScanning = $this->msg('piireview-scanning')->text();
+        $msgPIIDetected = $this->msg('piireview-pii-detected')->text();
+        $msgNoPII = $this->msg('piireview-no-pii')->text();
+        $msgProcessing = $this->msg('piireview-processing')->text();
+        $msgPIIRemoved = $this->msg('piireview-pii-removed')->text();
         
         $modalHTML = '
         <div id="piireview-modal" class="piireview-modal">
@@ -158,6 +165,11 @@ class SpecialPIIReview extends SpecialPage {
                             <button class="piireview-modal-zoom-reset" title="' . $msgZoomReset . '">↺</button>
                         </div>
                         <div class="piireview-modal-pii-status"></div>
+                        <!-- Hidden elements for localized status texts in modal -->
+                        <span class="piireview-text-pii-detected" style="display:none;">' . $msgPIIDetected . '</span>
+                        <span class="piireview-text-no-pii" style="display:none;">' . $msgNoPII . '</span>
+                        <span class="piireview-text-processing" style="display:none;">' . $msgProcessing . '</span>
+                        <span class="piireview-text-pii-removed" style="display:none;">' . $msgPIIRemoved . '</span>
                     </div>
                 </div>
                 <div class="piireview-modal-footer">
@@ -169,14 +181,13 @@ class SpecialPIIReview extends SpecialPage {
                     <div class="piireview-modal-notes">
                         <textarea placeholder="' . $msgNotesPlaceholder . '"></textarea>
                     </div>
-                    <!-- Hidden element to store the processed text -->
                     <span id="piireview-processed-text" style="display:none;">' . $msgProcessed . '</span>
                 </div>
             </div>
         </div>';
         
         $out->addHTML($modalHTML);
-    }  
+    } 
 
     /**
      * Display the folder navigation breadcrumb and path controls
@@ -516,8 +527,13 @@ class SpecialPIIReview extends SpecialPage {
     private function displayFileCard($file) {
         $fileId = md5($file['path']); // Generate unique ID for the file
         
-        // Get the localized text for "processed" once
+        // Get all localized status texts
         $msgProcessed = $this->msg('piireview-processed')->text();
+        $msgScanning = $this->msg('piireview-scanning')->text();
+        $msgPIIDetected = $this->msg('piireview-pii-detected')->text();
+        $msgNoPII = $this->msg('piireview-no-pii')->text();
+        $msgProcessing = $this->msg('piireview-processing')->text();
+        $msgPIIRemoved = $this->msg('piireview-pii-removed')->text();
     
         // Check if we need to display the parent folder info (for recursive search)
         $parentFolderInfo = '';
@@ -563,11 +579,15 @@ class SpecialPIIReview extends SpecialPage {
                   </video>';
         }
     
-        // Add PII detection status indicator
+        // Add PII detection status indicator with hidden status texts
         $html .= '<div class="piireview-pii-status">
                 <span class="piireview-status-indicator piireview-status-scanning">
-                    ' . $this->msg('piireview-scanning')->text() . '
+                    ' . $msgScanning . '
                 </span>
+                <span class="piireview-text-pii-detected" style="display:none;">' . $msgPIIDetected . '</span>
+                <span class="piireview-text-no-pii" style="display:none;">' . $msgNoPII . '</span>
+                <span class="piireview-text-processing" style="display:none;">' . $msgProcessing . '</span>
+                <span class="piireview-text-pii-removed" style="display:none;">' . $msgPIIRemoved . '</span>
               </div>';
     
         $html .= '
