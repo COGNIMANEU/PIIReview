@@ -9,10 +9,176 @@
             this.initBatchControls();
             this.initKeyboardNavigation();
             this.initRecursiveSearch();
+            this.initImageModal();
 
             // Update any dynamic elements after init
             this.updateUI();
         },
+
+        initImageModal: function() {
+            // Create modal container if it doesn't exist
+            if ($('#piireview-modal').length === 0) {
+                $('body').append(`
+            <div id="piireview-modal" class="piireview-modal">
+                <div class="piireview-modal-content">
+                    <span class="piireview-modal-close">&times;</span>
+                    <div class="piireview-modal-header">
+                        <h3 class="piireview-modal-title"></h3>
+                        <div class="piireview-modal-metadata"></div>
+                    </div>
+                    <div class="piireview-modal-body">
+                        <div class="piireview-modal-image-container">
+                            <img class="piireview-modal-image" src="" alt="Full size preview">
+                            <div class="piireview-modal-image-controls">
+                                <button class="piireview-modal-zoom-in" title="${mw.msg('piireview-zoom-in')}">+</button>
+                                <button class="piireview-modal-zoom-out" title="${mw.msg('piireview-zoom-out')}">-</button>
+                                <button class="piireview-modal-zoom-reset" title="${mw.msg('piireview-zoom-reset')}">↺</button>
+                            </div>
+                            <div class="piireview-modal-pii-status"></div>
+                        </div>
+                    </div>
+                    <div class="piireview-modal-footer">
+                        <div class="piireview-modal-action-buttons">
+                            <button class="piireview-modal-approve">${mw.msg('piireview-approve')}</button>
+                            <button class="piireview-modal-reject">${mw.msg('piireview-reject')}</button>
+                            <button class="piireview-modal-process">${mw.msg('piireview-process-pii')}</button>
+                        </div>
+                        <div class="piireview-modal-notes">
+                            <textarea placeholder="${mw.msg('piireview-notes-placeholder')}"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+            }
+
+            // Open modal when clicking on image or card
+            $(document).on('click', '.piireview-image-container, .piireview-card-header', function() {
+                var card = $(this).closest('.piireview-card');
+                var fileId = card.attr('id').replace('card-', '');
+
+                // Get image data
+                var imgElement = card.find('.piireview-image');
+                var imgSrc = imgElement.attr('src');
+                var imgFullsize = imgElement.data('fullsize') || imgSrc;
+
+                // Get metadata
+                var fileName = card.find('h3').text();
+                var metadata = card.find('.piireview-metadata').html();
+                var piiStatus = card.find('.piireview-pii-status').html();
+                var notes = card.find('textarea').val();
+
+                // Populate modal
+                $('#piireview-modal .piireview-modal-title').text(fileName);
+                $('#piireview-modal .piireview-modal-metadata').html(metadata);
+                $('#piireview-modal .piireview-modal-image').attr('src', imgFullsize).data('scale', 1).css('transform', 'scale(1)');
+                $('#piireview-modal .piireview-modal-pii-status').html(piiStatus);
+                $('#piireview-modal .piireview-modal-notes textarea').val(notes);
+
+                // Store original card ID for action buttons
+                $('#piireview-modal').data('file-id', fileId);
+
+                // Check if process button is disabled
+                var processDisabled = card.find('.piireview-button-process').prop('disabled');
+                $('#piireview-modal .piireview-modal-process').prop('disabled', processDisabled);
+
+                // Show modal
+                $('#piireview-modal').addClass('piireview-modal-show');
+
+                // Prevent scrolling on body
+                $('body').addClass('piireview-modal-open');
+            });
+
+            // Close modal when clicking close button or outside modal content
+            $(document).on('click', '.piireview-modal-close, .piireview-modal', function(e) {
+                if (e.target === this) {
+                    $('#piireview-modal').removeClass('piireview-modal-show');
+                    $('body').removeClass('piireview-modal-open');
+
+                    // Sync notes back to original card
+                    var fileId = $('#piireview-modal').data('file-id');
+                    var notes = $('#piireview-modal .piireview-modal-notes textarea').val();
+                    $('#card-' + fileId).find('textarea').val(notes);
+                }
+            });
+
+            // Modal zoom controls
+            $(document).on('click', '.piireview-modal-zoom-in', function() {
+                var img = $('.piireview-modal-image');
+                var scale = (img.data('scale') || 1) * 1.2;
+                img.css('transform', 'scale(' + scale + ')');
+                img.data('scale', scale);
+            });
+
+            $(document).on('click', '.piireview-modal-zoom-out', function() {
+                var img = $('.piireview-modal-image');
+                var scale = (img.data('scale') || 1) / 1.2;
+                img.css('transform', 'scale(' + scale + ')');
+                img.data('scale', scale);
+            });
+
+            $(document).on('click', '.piireview-modal-zoom-reset', function() {
+                var img = $('.piireview-modal-image');
+                img.css('transform', 'scale(1)');
+                img.data('scale', 1);
+            });
+
+            // Action buttons in modal
+            $(document).on('click', '.piireview-modal-approve', function() {
+                var fileId = $('#piireview-modal').data('file-id');
+                $('#card-' + fileId).find('.piireview-button-approve').trigger('click');
+                $('#piireview-modal').removeClass('piireview-modal-show');
+                $('body').removeClass('piireview-modal-open');
+            });
+
+            $(document).on('click', '.piireview-modal-reject', function() {
+                var fileId = $('#piireview-modal').data('file-id');
+                $('#card-' + fileId).find('.piireview-button-reject').trigger('click');
+                $('#piireview-modal').removeClass('piireview-modal-show');
+                $('body').removeClass('piireview-modal-open');
+            });
+
+            $(document).on('click', '.piireview-modal-process', function() {
+                var fileId = $('#piireview-modal').data('file-id');
+                $('#card-' + fileId).find('.piireview-button-process').trigger('click');
+                $(this).prop('disabled', true).text(mw.msg('piireview-processed'));
+            });
+
+            // Keyboard navigation in modal
+            $(document).on('keydown', function(e) {
+                if (!$('#piireview-modal').hasClass('piireview-modal-show')) {
+                    return;
+                }
+
+                switch (e.keyCode) {
+                    case 27: // Escape
+                        $('#piireview-modal').removeClass('piireview-modal-show');
+                        $('body').removeClass('piireview-modal-open');
+                        break;
+
+                    case 37: // Left arrow - navigate to previous image
+                        var fileId = $('#piireview-modal').data('file-id');
+                        var currentCard = $('#card-' + fileId);
+                        var prevCard = currentCard.prev('.piireview-card:visible');
+
+                        if (prevCard.length) {
+                            prevCard.find('.piireview-image-container').trigger('click');
+                        }
+                        break;
+
+                    case 39: // Right arrow - navigate to next image
+                        var fileId = $('#piireview-modal').data('file-id');
+                        var currentCard = $('#card-' + fileId);
+                        var nextCard = currentCard.next('.piireview-card:visible');
+
+                        if (nextCard.length) {
+                            nextCard.find('.piireview-image-container').trigger('click');
+                        }
+                        break;
+                }
+            });
+        },
+
 
         initImageZoom: function() {
             // Image zoom functionality
