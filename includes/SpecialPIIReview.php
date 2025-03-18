@@ -131,6 +131,16 @@ class SpecialPIIReview extends SpecialPage {
     private function addModalHTML() {
         $out = $this->getOutput();
         
+        // Preload all message strings for proper localization
+        $msgApprove = $this->msg('piireview-approve')->text();
+        $msgReject = $this->msg('piireview-reject')->text();
+        $msgProcessPii = $this->msg('piireview-process-pii')->text();
+        $msgProcessed = $this->msg('piireview-processed')->text(); // Add the processed text
+        $msgZoomIn = $this->msg('piireview-zoom-in')->text();
+        $msgZoomOut = $this->msg('piireview-zoom-out')->text();
+        $msgZoomReset = $this->msg('piireview-zoom-reset')->text();
+        $msgNotesPlaceholder = $this->msg('piireview-notes-placeholder')->text();
+        
         $modalHTML = '
         <div id="piireview-modal" class="piireview-modal">
             <div class="piireview-modal-content">
@@ -143,28 +153,30 @@ class SpecialPIIReview extends SpecialPage {
                     <div class="piireview-modal-image-container">
                         <img class="piireview-modal-image" src="" alt="Full size preview">
                         <div class="piireview-modal-image-controls">
-                            <button class="piireview-modal-zoom-in" title="' . $this->msg('piireview-zoom-in')->text() . '">+</button>
-                            <button class="piireview-modal-zoom-out" title="' . $this->msg('piireview-zoom-out')->text() . '">-</button>
-                            <button class="piireview-modal-zoom-reset" title="' . $this->msg('piireview-zoom-reset')->text() . '">↺</button>
+                            <button class="piireview-modal-zoom-in" title="' . $msgZoomIn . '">+</button>
+                            <button class="piireview-modal-zoom-out" title="' . $msgZoomOut . '">-</button>
+                            <button class="piireview-modal-zoom-reset" title="' . $msgZoomReset . '">↺</button>
                         </div>
                         <div class="piireview-modal-pii-status"></div>
                     </div>
                 </div>
                 <div class="piireview-modal-footer">
                     <div class="piireview-modal-action-buttons">
-                        <button class="piireview-modal-approve">' . $this->msg('piireview-approve')->text() . '</button>
-                        <button class="piireview-modal-reject">' . $this->msg('piireview-reject')->text() . '</button>
-                        <button class="piireview-modal-process">' . $this->msg('piireview-process-pii')->text() . '</button>
+                        <button class="piireview-modal-approve">' . $msgApprove . '</button>
+                        <button class="piireview-modal-reject">' . $msgReject . '</button>
+                        <button class="piireview-modal-process">' . $msgProcessPii . '</button>
                     </div>
                     <div class="piireview-modal-notes">
-                        <textarea placeholder="' . $this->msg('piireview-notes-placeholder')->text() . '"></textarea>
+                        <textarea placeholder="' . $msgNotesPlaceholder . '"></textarea>
                     </div>
+                    <!-- Hidden element to store the processed text -->
+                    <span id="piireview-processed-text" style="display:none;">' . $msgProcessed . '</span>
                 </div>
             </div>
         </div>';
         
         $out->addHTML($modalHTML);
-    }    
+    }  
 
     /**
      * Display the folder navigation breadcrumb and path controls
